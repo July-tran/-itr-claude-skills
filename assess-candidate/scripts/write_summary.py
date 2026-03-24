@@ -90,6 +90,8 @@ def build_ranking(ws, candidates: list[dict]):
     headers = [
         ("Rank",            5),
         ("Candidate",      22),
+        ("Phone",          16),
+        ("Email",          26),
         ("Score",           9),
         ("Match Level",    13),
         ("Recommendation", 28),
@@ -139,19 +141,21 @@ def build_ranking(ws, candidates: list[dict]):
 
         dcell(ws, r, 1,  rank,                                          bg=row_bg, bold=(rank <= 3), halign="center")
         dcell(ws, r, 2,  cand.get("name", ""),                          bg=row_bg, bold=(rank <= 3))
-        c = ws.cell(row=r, column=3, value=f"{total:.0f} / 100")
+        dcell(ws, r, 3,  cand.get("phone", ""),                         bg=row_bg)
+        dcell(ws, r, 4,  cand.get("email", ""),                         bg=row_bg)
+        c = ws.cell(row=r, column=5, value=f"{total:.0f} / 100")
         c.fill = fill(score_bg); c.font = font(bold=True); c.alignment = align("center"); c.border = border()
-        dcell(ws, r, 4,  match_lvl,                                     bg=score_bg, halign="center")
-        dcell(ws, r, 5,  rec,                                           bg=score_bg)
-        dcell(ws, r, 6,  f"{level.get('candidate_level_title','')} ({level.get('candidate_level','')})", halign="center")
-        dcell(ws, r, 7,  f"{level.get('expected_level_title','')} ({level.get('expected_level','')})",   halign="center")
-        dcell(ws, r, 8,  level.get("level_fit", ""),                    halign="center")
-        dcell(ws, r, 9,  len(analysis.get("matching_skills", [])),      halign="center")
-        dcell(ws, r, 10, len(analysis.get("missing_skills", [])),       halign="center")
+        dcell(ws, r, 6,  match_lvl,                                     bg=score_bg, halign="center")
+        dcell(ws, r, 7,  rec,                                           bg=score_bg)
+        dcell(ws, r, 8,  f"{level.get('candidate_level_title','')} ({level.get('candidate_level','')})", halign="center")
+        dcell(ws, r, 9,  f"{level.get('expected_level_title','')} ({level.get('expected_level','')})",   halign="center")
+        dcell(ws, r, 10, level.get("level_fit", ""),                    halign="center")
+        dcell(ws, r, 11, len(analysis.get("matching_skills", [])),      halign="center")
+        dcell(ws, r, 12, len(analysis.get("missing_skills", [])),       halign="center")
 
         risk_colour = C_WEAK if high else C_MOD if medium else C_STRONG
-        dcell(ws, r, 11, risk_str, bg=risk_colour, halign="center")
-        dcell(ws, r, 12, jd.get("role_title", ""))
+        dcell(ws, r, 13, risk_str, bg=risk_colour, halign="center")
+        dcell(ws, r, 14, jd.get("role_title", ""))
 
         ws.row_dimensions[r].height = 18
 
@@ -166,6 +170,8 @@ def build_scores(ws, candidates: list[dict]):
 
     headers = [
         ("Candidate",      22),
+        ("Phone",          16),
+        ("Email",          26),
         ("Total",           9),
         ("Match Level",    13),
         ("Skill Match\n/30", 12),
@@ -201,15 +207,17 @@ def build_scores(ws, candidates: list[dict]):
             return C_WEAK
 
         dcell(ws, i, 1,  cand.get("name", ""))
-        dcell(ws, i, 2,  f"{total:.0f}",                                     bg=bg, bold=True, halign="center")
-        dcell(ws, i, 3,  match,                                               bg=bg, halign="center")
-        dcell(ws, i, 4,  bd.get("skill_match", 0),                           bg=pct_fill(bd.get("skill_match",0), 30), halign="center")
-        dcell(ws, i, 5,  bd.get("experience_relevance", 0),                  bg=pct_fill(bd.get("experience_relevance",0), 25), halign="center")
-        dcell(ws, i, 6,  bd.get("tech_stack_alignment", 0),                  bg=pct_fill(bd.get("tech_stack_alignment",0), 20), halign="center")
-        dcell(ws, i, 7,  bd.get("level_fit", 0),                             bg=pct_fill(bd.get("level_fit",0), 15), halign="center")
-        dcell(ws, i, 8,  bd.get("project_relevance", 0),                     bg=pct_fill(bd.get("project_relevance",0), 10), halign="center")
-        dcell(ws, i, 9,  cand.get("ai_years", ""),                           halign="center")
-        dcell(ws, i, 10, cand.get("total_years", ""),                         halign="center")
+        dcell(ws, i, 2,  cand.get("phone", ""))
+        dcell(ws, i, 3,  cand.get("email", ""))
+        dcell(ws, i, 4,  f"{total:.0f}",                                     bg=bg, bold=True, halign="center")
+        dcell(ws, i, 5,  match,                                               bg=bg, halign="center")
+        dcell(ws, i, 6,  bd.get("skill_match", 0),                           bg=pct_fill(bd.get("skill_match",0), 30), halign="center")
+        dcell(ws, i, 7,  bd.get("experience_relevance", 0),                  bg=pct_fill(bd.get("experience_relevance",0), 25), halign="center")
+        dcell(ws, i, 8,  bd.get("tech_stack_alignment", 0),                  bg=pct_fill(bd.get("tech_stack_alignment",0), 20), halign="center")
+        dcell(ws, i, 9,  bd.get("level_fit", 0),                             bg=pct_fill(bd.get("level_fit",0), 15), halign="center")
+        dcell(ws, i, 10, bd.get("project_relevance", 0),                     bg=pct_fill(bd.get("project_relevance",0), 10), halign="center")
+        dcell(ws, i, 11, cand.get("ai_years", ""),                           halign="center")
+        dcell(ws, i, 12, cand.get("total_years", ""),                         halign="center")
 
     ws.freeze_panes = "B2"
 
@@ -220,14 +228,18 @@ def build_strengths_concerns(ws, candidates: list[dict]):
     ws.title = "3 - Strengths & Concerns"
 
     ws.column_dimensions["A"].width = 22
-    ws.column_dimensions["B"].width = 45
-    ws.column_dimensions["C"].width = 45
-    ws.column_dimensions["D"].width = 35
+    ws.column_dimensions["B"].width = 16
+    ws.column_dimensions["C"].width = 26
+    ws.column_dimensions["D"].width = 45
+    ws.column_dimensions["E"].width = 45
+    ws.column_dimensions["F"].width = 35
 
     hcell(ws, 1, 1, "Candidate")
-    hcell(ws, 1, 2, "Top Strengths (with evidence)")
-    hcell(ws, 1, 3, "Top Concerns / Gaps")
-    hcell(ws, 1, 4, "Risk Signals")
+    hcell(ws, 1, 2, "Phone")
+    hcell(ws, 1, 3, "Email")
+    hcell(ws, 1, 4, "Top Strengths (with evidence)")
+    hcell(ws, 1, 5, "Top Concerns / Gaps")
+    hcell(ws, 1, 6, "Risk Signals")
 
     sorted_cands = sorted(
         candidates,
@@ -263,9 +275,11 @@ def build_strengths_concerns(ws, candidates: list[dict]):
         )
 
         dcell(ws, r, 1, cand.get("name", ""), bg=bg, bold=True)
-        dcell(ws, r, 2, str_text,  bg=C_GREEN,  wrap=True)
-        dcell(ws, r, 3, weak_text, bg=C_ORANGE, wrap=True)
-        dcell(ws, r, 4, risk_text, wrap=True)
+        dcell(ws, r, 2, cand.get("phone", ""), bg=bg)
+        dcell(ws, r, 3, cand.get("email", ""), bg=bg)
+        dcell(ws, r, 4, str_text,  bg=C_GREEN,  wrap=True)
+        dcell(ws, r, 5, weak_text, bg=C_ORANGE, wrap=True)
+        dcell(ws, r, 6, risk_text, wrap=True)
 
         lines = max(len(strengths), len(weaknesses), len(risks))
         ws.row_dimensions[r].height = max(40, lines * 30)
