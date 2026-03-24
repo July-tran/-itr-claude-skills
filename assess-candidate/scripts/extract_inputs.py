@@ -323,6 +323,42 @@ def _read_cached_asset(key: str) -> str | None:
 
 # ── File discovery ─────────────────────────────────────────────────────────────
 
+def extract_contact(text: str) -> dict:
+    """
+    Extract email and phone from raw CV text using regex.
+    Handles common Vietnamese CV formats:
+      Email: ..., E-mail: ..., Mobile: ..., Phone: ..., Tel: ..., SDT: ...
+    """
+    import re
+
+    email = ""
+    phone = ""
+
+    # Email — look for labelled line first, then bare address
+    email_label = re.search(
+        r"(?:e[-\s]?mail|email address)\s*[:\-]\s*([^\s]+@[^\s]+)",
+        text, re.IGNORECASE
+    )
+    email_bare = re.search(r"[\w.+\-]+@[\w.\-]+\.\w{2,}", text)
+    if email_label:
+        email = email_label.group(1).strip(".,;")
+    elif email_bare:
+        email = email_bare.group(0).strip(".,;")
+
+    # Phone — labelled line first, then bare Vietnamese/international number
+    phone_label = re.search(
+        r"(?:mobile|phone|tel|s\.?đ\.?t|hotline|contact|di\s*động)\s*[:\-]?\s*([+\d][\d\s\-().]{7,})",
+        text, re.IGNORECASE
+    )
+    phone_bare = re.search(r"(?<!\d)(\+84[\d\s\-]{9,}|0[\d]{9})", text)
+    if phone_label:
+        phone = re.sub(r"\s+", "", phone_label.group(1)).strip(".,;")
+    elif phone_bare:
+        phone = phone_bare.group(1).strip()
+
+    return {"email": email, "phone": phone}
+
+
 def find_cv_files() -> list[Path]:
     seen, results = set(), []
 
@@ -448,7 +484,14 @@ def main():
     # ── CVs (always fresh) ────────────────────────────────────────────────────
     for cv in find_cv_files():
         try:
-            out["cv_files"].append({"file_name": cv.name, "text": extract_file(cv)})
+            text = extract_file(cv)
+            contact = extract_contact(text)
+            out["cv_files"].append({
+                "file_name": cv.name,
+                "text": text,
+                "email": contact["email"],
+                "phone": contact["phone"],
+            })
         except Exception as e:
             out["errors"].append(f"CV {cv.name}: {e}")
 
