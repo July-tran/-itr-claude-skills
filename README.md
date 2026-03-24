@@ -68,7 +68,7 @@ your-project/
 ├── JD.docx                          ← job description
 ├── Levelling.xlsx                   ← levelling framework
 ├── Persona.docx                     ← interviewer persona
-├── HM_Candidate_Clarification.docx  ← HM clarification (optional but recommended)
+├── HM_Candidate_Clarification.docx  ← HM clarification (REQUIRED)
 └── output/                          ← generated automatically
     ├── assessment_<Name>.xlsx
     ├── assessment_<Name>.json
@@ -76,7 +76,7 @@ your-project/
     └── tracking.json
 ```
 
-> **HM Clarification file** — When present, this document overrides the JD on what is truly must-have vs. nice-to-have. It also defines deal-breakers that automatically disqualify a candidate regardless of score. Always include it for more accurate analytics. The file is auto-detected by any filename containing `HM` or `CLARIF` (e.g. `HM_Candidate_Clarification_AAD.docx`).
+> **HM Clarification file (required)** — This document overrides the JD on what is truly must-have vs. nice-to-have, and defines deal-breakers that automatically disqualify a candidate regardless of score. The skill will not proceed without it — always include it alongside your JD. The file is auto-detected by any filename containing `HM` or `CLARIF` (e.g. `HM_Candidate_Clarification_AAD.docx`).
 
 ### How to run
 

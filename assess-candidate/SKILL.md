@@ -49,7 +49,7 @@ python "{{SKILL_DIR}}/scripts/extract_inputs.py" --base-dir "$PROJECT_DIR"
 The script returns JSON with:
 - `cv_files`: list of `{file_name, text}` — all CVs found
 - `jd_text`, `levelling_text`, `persona_text` — from cache or freshly extracted
-- `hm_clarification_text` — Hiring Manager clarification document (if present); overrides JD intent on must-have vs. nice-to-have
+- `hm_clarification_text` — **Required.** Hiring Manager clarification document; overrides JD intent on must-have vs. nice-to-have. If missing, stop and ask the user to provide it before proceeding.
 - `assets_refreshed`: which assets were re-extracted this run
 - `errors`: any files that couldn't be found or read
 
