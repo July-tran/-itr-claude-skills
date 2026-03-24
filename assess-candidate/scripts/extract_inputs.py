@@ -326,35 +326,51 @@ def _read_cached_asset(key: str) -> str | None:
 def extract_contact(text: str) -> dict:
     """
     Extract email and phone from raw CV text using regex.
-    Handles common Vietnamese CV formats:
-      Email: ..., E-mail: ..., Mobile: ..., Phone: ..., Tel: ..., SDT: ...
+    Handles common Vietnamese CV formats including:
+      Email: ..., e-mail: ..., Mobile: ..., Phone: ..., Tel: ..., SDT: ...
+      (+ 84)..., 84 - xxx..., 0xx xxx xxx, pipe-separated lines.
     """
     import re
 
     email = ""
     phone = ""
 
-    # Email — look for labelled line first, then bare address
+    # ── Email ────────────────────────────────────────────────────────────────
+    # Stop at pipe/space/comma/semicolon so adjacent fields on the same line
+    # (e.g. "Email:foo@x.com|Mobile:...") are not included in the match.
     email_label = re.search(
-        r"(?:e[-\s]?mail|email address)\s*[:\-]\s*([^\s]+@[^\s]+)",
+        r"(?:e[-\s]?mail|email address)\s*[:\-]\s*([^\s|,;]+@[^\s|,;]+)",
         text, re.IGNORECASE
     )
     email_bare = re.search(r"[\w.+\-]+@[\w.\-]+\.\w{2,}", text)
     if email_label:
-        email = email_label.group(1).strip(".,;")
+        email = email_label.group(1).strip(".,;|")
     elif email_bare:
-        email = email_bare.group(0).strip(".,;")
+        email = email_bare.group(0).strip(".,;|")
 
-    # Phone — labelled line first, then bare Vietnamese/international number
+    # ── Phone ────────────────────────────────────────────────────────────────
+    # Labelled: allow optional leading ( for formats like (+84) or (+ 84)
     phone_label = re.search(
-        r"(?:mobile|phone|tel|s\.?đ\.?t|hotline|contact|di\s*động)\s*[:\-]?\s*([+\d][\d\s\-().]{7,})",
+        r"(?:mobile|phone|tel|s\.?đ\.?t|hotline|contact|di\s*động)\s*[:\-]?\s*"
+        r"([\(\+\d][\d\s\-().+]{7,})",
         text, re.IGNORECASE
     )
-    phone_bare = re.search(r"(?<!\d)(\+84[\d\s\-]{9,}|0[\d]{9})", text)
+    # Bare patterns (no label):
+    #   +84...  |  0x xxxxxxxx  |  0xx xxx xxx  |  84 - xxx xxx xxx
+    phone_bare = re.search(
+        r"(?<!\d)(\+84[\d\s\-]{9,}|0\d[\d\s\-]{8,11}|84[\s\-]+\d[\d\s\-]{7,})",
+        text
+    )
+
+    def clean_phone(raw: str) -> str:
+        # Drop everything once letters start (e.g. " (Zalo)", " ext", etc.)
+        raw = re.split(r"[A-Za-zÀ-ỹ]", raw)[0]
+        return re.sub(r"[^\d+]", "", raw).strip()
+
     if phone_label:
-        phone = re.sub(r"\s+", "", phone_label.group(1)).strip(".,;")
+        phone = clean_phone(phone_label.group(1))
     elif phone_bare:
-        phone = phone_bare.group(1).strip()
+        phone = clean_phone(phone_bare.group(1))
 
     return {"email": email, "phone": phone}
 
