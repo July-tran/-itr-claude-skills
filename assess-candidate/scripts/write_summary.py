@@ -323,6 +323,59 @@ def build_skills(ws, candidates: list[dict]):
     ws.freeze_panes = "B2"
 
 
+# ── Rank-prefix renaming ───────────────────────────────────────────────────────
+
+def rename_by_rank(output_dir: Path, sorted_cands: list[dict]):
+    """
+    Rename individual assessment Excel files to reflect current ranking.
+    e.g. assessment_Nguyen_Minh_Tri.xlsx → 01_assessment_Nguyen_Minh_Tri.xlsx
+
+    Safe to call multiple times: strips any existing rank prefix before renaming.
+    """
+    import re
+    rank_prefix = re.compile(r"^\d+_")
+    total = len(sorted_cands)
+    pad = len(str(total))  # zero-pad width: 2 for ≤99, 3 for ≤999
+
+    renamed, skipped = [], []
+
+    for rank, d in enumerate(sorted_cands, 1):
+        name = d.get("candidate", {}).get("name", "").replace(" ", "_")
+        if not name:
+            continue
+
+        # Build the base filename (no prefix)
+        base = f"assessment_{name}.xlsx"
+
+        # Find the current file — may already have an old rank prefix
+        current = None
+        for f in output_dir.glob("*.xlsx"):
+            if f.name == "candidates_summary.xlsx":
+                continue
+            stripped = rank_prefix.sub("", f.name)
+            if stripped == base:
+                current = f
+                break
+
+        if current is None:
+            skipped.append(name)
+            continue
+
+        new_name = f"{rank:0{pad}d}_{base}"
+        new_path = output_dir / new_name
+
+        if current.name != new_name:
+            current.rename(new_path)
+            renamed.append(f"{current.name} → {new_name}")
+
+    if renamed:
+        print(f"[rank] Renamed {len(renamed)} file(s):", file=sys.stderr)
+        for r in renamed:
+            print(f"  {r}", file=sys.stderr)
+    if skipped:
+        print(f"[rank] Could not find Excel for: {', '.join(skipped)}", file=sys.stderr)
+
+
 # ── Main ───────────────────────────────────────────────────────────────────────
 
 def _resolve_base_dir() -> Path:
@@ -349,6 +402,13 @@ def main():
 
     print(f"Building summary for {len(candidates)} candidate(s)...", file=sys.stderr)
 
+    # Sort once — reused by both the summary sheets and file renaming
+    sorted_cands = sorted(
+        candidates,
+        key=lambda d: d.get("score", {}).get("total_score", 0),
+        reverse=True,
+    )
+
     wb = Workbook()
     if "Sheet" in wb.sheetnames:
         del wb["Sheet"]
@@ -361,6 +421,9 @@ def main():
     out = output_dir / "candidates_summary.xlsx"
     wb.save(str(out))
     print(f"Summary: {out}")
+
+    # Rename individual Excel files to reflect current ranking
+    rename_by_rank(output_dir, sorted_cands)
 
 
 if __name__ == "__main__":
