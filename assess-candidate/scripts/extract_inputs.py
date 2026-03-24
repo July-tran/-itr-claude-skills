@@ -403,6 +403,7 @@ def main():
         "jd_text": "",
         "levelling_text": "",
         "persona_text": "",
+        "hm_clarification_text": "",
         "assets_refreshed": [],
         "errors": [],
     }
@@ -420,6 +421,9 @@ def main():
         "persona":   dict(keywords=["PERSONA","INTERVIEWER"],
                           extensions=[".docx",".xlsx"],
                           standard_names=["personas.docx","personas.xlsx"]),
+        "hm_clarification": dict(keywords=["HM","CLARIF","HIRING_MANAGER","HM_CANDIDATE"],
+                                 extensions=[".docx",".pdf",".txt"],
+                                 standard_names=["hm_clarification.docx","hm.docx"]),
     }
 
     for key, spec in asset_specs.items():

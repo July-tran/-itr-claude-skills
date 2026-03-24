@@ -49,6 +49,7 @@ python "{{SKILL_DIR}}/scripts/extract_inputs.py" --base-dir "$PROJECT_DIR"
 The script returns JSON with:
 - `cv_files`: list of `{file_name, text}` — all CVs found
 - `jd_text`, `levelling_text`, `persona_text` — from cache or freshly extracted
+- `hm_clarification_text` — Hiring Manager clarification document (if present); overrides JD intent on must-have vs. nice-to-have
 - `assets_refreshed`: which assets were re-extracted this run
 - `errors`: any files that couldn't be found or read
 
@@ -82,6 +83,12 @@ From JD text, extract:
 - Minimum years of experience
 - Core tech stack
 - Key responsibilities and domain
+
+**If `hm_clarification_text` is present, apply it immediately after reading the JD:**
+- The HM clarification overrides the JD on what is truly must-have vs. nice-to-have
+- Re-classify JD requirements according to the clarification (some "required" items may become nice-to-have; some preferred items may become critical)
+- Note any deal-breakers explicitly listed by the HM — these are automatic disqualifiers regardless of score
+- Record the clarification source in `overall_assessment` so the scoring rationale is transparent
 
 ### 2c. Level Mapping
 

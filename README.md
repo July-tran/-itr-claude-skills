@@ -64,16 +64,19 @@ cp -r assess-candidate ~/.claude/skills/
 
 ```
 your-project/
-├── CV/                  ← drop candidate CVs here (.pdf or .docx)
-├── JD.docx              ← job description
-├── Levelling.xlsx       ← levelling framework
-├── Persona.docx         ← interviewer persona
-└── output/              ← generated automatically
+├── CV/                              ← drop candidate CVs here (.pdf or .docx)
+├── JD.docx                          ← job description
+├── Levelling.xlsx                   ← levelling framework
+├── Persona.docx                     ← interviewer persona
+├── HM_Candidate_Clarification.docx  ← HM clarification (optional but recommended)
+└── output/                          ← generated automatically
     ├── assessment_<Name>.xlsx
     ├── assessment_<Name>.json
     ├── candidates_summary.xlsx
     └── tracking.json
 ```
+
+> **HM Clarification file** — When present, this document overrides the JD on what is truly must-have vs. nice-to-have. It also defines deal-breakers that automatically disqualify a candidate regardless of score. Always include it for more accurate analytics. The file is auto-detected by any filename containing `HM` or `CLARIF` (e.g. `HM_Candidate_Clarification_AAD.docx`).
 
 ### How to run
 
